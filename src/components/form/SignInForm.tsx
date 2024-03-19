@@ -8,6 +8,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Link from 'next/link';
 import GoogleSigninButton from '../GoogleSigninButton';
+import { sign } from 'crypto';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 const FormSchema = z.object({
     email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -18,6 +21,7 @@ const FormSchema = z.object({
 })
 
 const SignInForm = () => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof FormSchema>>({
       resolver: zodResolver(FormSchema),
       defaultValues: {
@@ -26,9 +30,19 @@ const SignInForm = () => {
       }
     })
 
-    const onSubmit = (values:z.infer<typeof FormSchema>) => {
-        console.log('form submited!')
-    }
+    const onSubmit = async (values:z.infer<typeof FormSchema>) => {
+        const signInData = await signIn('credentials', {
+            emil: values.email,
+            password: values.password,
+        });
+        console.log(signInData);
+
+        if (signInData?.error){
+            console.log(signInData.error);
+        } else {
+            router.push('../admin');
+        }
+    };
 
     return (
     <>
@@ -70,7 +84,7 @@ const SignInForm = () => {
                 </div>
                 <GoogleSigninButton>Sign in with Google</GoogleSigninButton>
                 <p className='text-clip text-sm text-gray-500 mt-4'>
-                    If you don&apos;t have an account, please &nbsp;.
+                    If you don&apos;t have an account, please &nbsp;
                     <Link href='./sign-up' className='text-blue-500 hover:underline'>Sign up</Link>
                 </p>
             </form>

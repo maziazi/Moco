@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Link from 'next/link';
 import GoogleSigninButton from '../GoogleSigninButton';
+import { useRouter } from 'next/navigation';
 
 const FormSchema = z
   .object({
@@ -27,6 +28,7 @@ const FormSchema = z
   });
 
 const SignUpForm = () => {
+    const router = useRouter();
     const form = useForm<z.infer<typeof FormSchema>>({
       resolver: zodResolver(FormSchema),
       defaultValues: {
@@ -37,8 +39,24 @@ const SignUpForm = () => {
       }
     })
 
-    const onSubmit = (values:z.infer<typeof FormSchema>) => {
-        console.log('form submited!')
+    const onSubmit = async (values:z.infer<typeof FormSchema>) => {
+      const response = await fetch('api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({
+          username: values.username,
+          email: values.email,
+          password: values.password
+        })
+      })
+
+      if (response.ok){
+        router.push('./sign-in')
+      } else {
+        console.error('Pembuatan akun gagal')
+      }
     }
 
     return (
@@ -107,7 +125,7 @@ const SignUpForm = () => {
                 </div>
                 <GoogleSigninButton>Sign up with Google</GoogleSigninButton>
                 <p className='text-clip text-sm text-gray-500 mt-4'>
-                    If you don&apos;t have an account, please &nbsp;.
+                    If you don&apos;t have an account, please &nbsp;
                     <Link href='./sign-in' className='text-blue-500 hover:underline'>Sign in</Link>
                 </p>
             </form>
