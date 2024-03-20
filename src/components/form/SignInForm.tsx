@@ -2,15 +2,15 @@
 import { useForm } from 'react-hook-form';
 // import React from 'react'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
-import { z } from 'zod';
+import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Link from 'next/link';
 import GoogleSigninButton from '../GoogleSigninButton';
-import { sign } from 'crypto';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useToast } from '../ui/use-toast';
 
 const FormSchema = z.object({
     email: z.string().min(1, 'Email is required').email('Invalid email'),
@@ -22,6 +22,7 @@ const FormSchema = z.object({
 
 const SignInForm = () => {
     const router = useRouter();
+    const { toast } = useToast();
     const form = useForm<z.infer<typeof FormSchema>>({
       resolver: zodResolver(FormSchema),
       defaultValues: {
@@ -32,15 +33,21 @@ const SignInForm = () => {
 
     const onSubmit = async (values:z.infer<typeof FormSchema>) => {
         const signInData = await signIn('credentials', {
-            emil: values.email,
+            email: values.email,
             password: values.password,
+            redirect: false,
         });
         console.log(signInData);
 
         if (signInData?.error){
-            console.log(signInData.error);
+            toast({
+                title: "Error",
+                description: "Oops! Something when wrong",
+                variant: 'destructive'
+            })
         } else {
-            router.push('../admin');
+            router.refresh();
+            router.push('./admin');
         }
     };
 

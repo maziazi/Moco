@@ -14,14 +14,7 @@ export const authOptions: NextAuthOptions = {
     pages:{
         signIn: "./sign-in",
     },
-    // Configure one or more authentication providers
-    // providers: [
-    //   GithubProvider({
-    //     clientId: process.env.GITHUB_ID,
-    //     clientSecret: process.env.GITHUB_SECRET,
-    //   }),
-    //   // ...add more providers here
-    // ],
+
     providers: [
         CredentialsProvider({
           name: "Credentials",
@@ -31,7 +24,6 @@ export const authOptions: NextAuthOptions = {
           },
           
             async authorize(credentials) {
-            // const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
       
                 if ( !credentials?.email || !credentials?.password){
                     return null;
@@ -57,5 +49,25 @@ export const authOptions: NextAuthOptions = {
                 }
             }
         })
-      ]
+      ],
+      callbacks: {
+        async jwt({ token, user}){
+            if (user) {
+                return{
+                    ...token,
+                    username: user.username
+                }
+            }
+            return token
+        },
+        async session ({ session, token }){
+            return {
+                ...session,
+                user:{
+                    ...session.user,
+                    username: token.username
+                }
+            }
+        },
+      }
   }

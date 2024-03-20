@@ -9,6 +9,7 @@ import { Input } from '../ui/input';
 import Link from 'next/link';
 import GoogleSigninButton from '../GoogleSigninButton';
 import { useRouter } from 'next/navigation';
+import { toast, useToast } from '../ui/use-toast';
 
 const FormSchema = z
   .object({
@@ -29,6 +30,7 @@ const FormSchema = z
 
 const SignUpForm = () => {
     const router = useRouter();
+    const { toast } = useToast();
     const form = useForm<z.infer<typeof FormSchema>>({
       resolver: zodResolver(FormSchema),
       defaultValues: {
@@ -55,7 +57,12 @@ const SignUpForm = () => {
       if (response.ok){
         router.push('./sign-in')
       } else {
-        console.error('Pembuatan akun gagal')
+        toast({
+            title: "Error",
+            description: "Oops! Something when wrong",
+            variant: 'destructive'
+        })
+
       }
     }
 
